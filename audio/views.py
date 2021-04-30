@@ -1,15 +1,18 @@
-from audio.models import AudioBook, Podcast, Song
-from rest_framework import viewsets
 import datetime
+
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from audio.serializers import AudioBookSerializer, PodcastSerializer, SongSerializer
+
+from audio.models import AudioBook, Podcast, Song
+from audio.serializers import (AudioBookSerializer, PodcastSerializer,
+                               SongSerializer)
 
 
 class AudioViewSet(viewsets.ViewSet):
     audiofiletype = {"song": Song, "audiobook": AudioBook, "podcast": Podcast}
     audioserializers = {"song": SongSerializer, "audiobook": AudioBookSerializer, "podcast": PodcastSerializer}
-    http_method_names = ['get', 'put', 'post', 'delete']
+    http_method_names = ["get", "put", "post", "delete"]
 
     def create_audio(self, request, *args, **kwargs):
         data = request.data
@@ -23,11 +26,7 @@ class AudioViewSet(viewsets.ViewSet):
             metadata["uploaded_time"] = datetime.datetime.utcnow()
             if type == "podcast":
                 participent = metadata.get("participents", None)
-                if (
-                        participent is None
-                        or len(participent) > 10
-                        or any(i for i in participent if len(i) > 100)
-                ):
+                if participent is None or len(participent) > 10 or any(i for i in participent if len(i) > 100):
                     return Response("The request is invalid: 400 bad request", status=400)
             try:
                 audio_type.objects.create(**metadata)
@@ -37,7 +36,7 @@ class AudioViewSet(viewsets.ViewSet):
         return Response("The request is invalid: 400 bad request", status=400)
 
     def delete_audio(self, request, *args, **kwargs):
-        audio_file_type, audio_file_id = kwargs.get('audioFileType'), kwargs.get('audioFileID')
+        audio_file_type, audio_file_id = kwargs.get("audioFileType"), kwargs.get("audioFileID")
         audio_file_obj = self.audiofiletype.get(audio_file_type)
         if audio_file_obj:
             try:
@@ -49,7 +48,7 @@ class AudioViewSet(viewsets.ViewSet):
         return Response("The request is invalid: 400 bad request", status=400)
 
     def get_audio(self, request, *args, **kwargs):
-        audio_file_type, audio_file_id =  kwargs.get('audioFileType'), kwargs.get('audioFileID')
+        audio_file_type, audio_file_id = kwargs.get("audioFileType"), kwargs.get("audioFileID")
         audio_file_obj = self.audiofiletype.get(audio_file_type)
         audioserializers = self.audioserializers.get(audio_file_type)
         if audio_file_obj:
@@ -64,7 +63,7 @@ class AudioViewSet(viewsets.ViewSet):
         return Response(data="The request is invalid: 400 bad request", status=400)
 
     def update_audio(self, request, *args, **kwargs):
-        audio_file_type, audio_file_id = kwargs.get('audioFileType'), kwargs.get('audioFileID')
+        audio_file_type, audio_file_id = kwargs.get("audioFileType"), kwargs.get("audioFileID")
         request_data = request.data
         audio_file_obj = self.audiofiletype.get(audio_file_type)
         metadata = request_data.get("audioFileMetadata")
